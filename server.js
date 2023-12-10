@@ -1,20 +1,20 @@
-const mongoose = require("mongoose");
 const app = require("./app");
-const PASSWORD = "UZjKxPZUM2hW01pj";
-const DB_HOST = `mongodb+srv://Denis:${PASSWORD}@cluster0.cqmizph.mongodb.net/`;
-const PORT = 3000;
+const mongoose = require("mongoose");
+
+require("dotenv").config();
+
+const { DB_HOST, PORT } = process.env;
 
 mongoose.set("strictQuery", true);
 
 mongoose
   .connect(DB_HOST)
   .then(() => {
-    console.log("Database connection successful");
     app.listen(PORT, () => {
-      console.log("Server running. Use our API on port: 3000");
+      console.log(`Database connection successful`);
     });
   })
-  .catch((error) => {
-    console.log(error.message);
+  .catch((err) => {
+    console.log(err.message);
     process.exit(1);
   });

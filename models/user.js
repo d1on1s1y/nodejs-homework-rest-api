@@ -1,13 +1,12 @@
-const { Schema, model } = require("mongoose");
 const Joi = require("joi");
-
+const { Schema, model } = require("mongoose");
 const { handleMongooseError } = require("../helpers");
 
 const userSchema = new Schema(
   {
     password: {
       type: String,
-      minlength: 5,
+      minlength: 6,
       required: [true, "Set password for user"],
     },
     email: {
@@ -20,31 +19,48 @@ const userSchema = new Schema(
       enum: ["starter", "pro", "business"],
       default: "starter",
     },
-    token: String,
+    token: {
+      type: String,
+      default: "",
+    },
     avatarURL: String,
+    verify: {
+      type: Boolean,
+      default: false,
+    },
+    verificationToken: {
+      type: String,
+      required: [true, "Verify token is required"],
+    },
   },
-  { versionKey: false, timestamps: true }
+
+  { versionKey: false }
 );
 
+const authBothSchema = Joi.object({
+  email: Joi.string().required(),
+  password: Joi.string().min(6).required(),
+});
+
+const updateSubscriptionSchema = Joi.object({
+  subscription: Joi.string()
+    .valid("starter", "pro", "business")
+    .required()
+    .messages({
+      "any.required": "missing field subscription",
+    }),
+});
+
+const emailSchema = Joi.object({
+  email: Joi.string().required(),
+});
+
 userSchema.post("save", handleMongooseError);
-
-const registerSchema = Joi.object({
-  email: Joi.string().email().required(),
-  password: Joi.string().min(5).required(),
-});
-const loginSchema = Joi.object({
-  email: Joi.string().email().required(),
-  password: Joi.string().min(5).required(),
-});
-
-const schemas = {
-  registerSchema,
-  loginSchema,
-};
-
 const User = model("user", userSchema);
 
 module.exports = {
   User,
-  schemas,
+  emailSchema,
+  authBothSchema,
+  updateSubscriptionSchema,
 };
